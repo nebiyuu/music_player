@@ -1,13 +1,20 @@
-// ignore_for_file: prefer_const_constructors, avoid_print
+// ignore_for_file: prefer_const_constructors, camel_case_types, avoid_print
+
+// import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:musicc/pages/detail.dart';
+import 'package:musicc/pages/songs.dart';
 
 void main() {
   runApp(MaterialApp(
     home: MyApp(),
   ));
 }
+
+//player created
+final AudioPlayer player = AudioPlayer();
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -17,44 +24,82 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final AudioPlayer player = AudioPlayer();
-  int what = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("what"),
+        title: Text("music"),
         backgroundColor: Colors.blue,
       ),
       body: ListView.builder(
-        itemCount: 1,
+        itemCount: week.length,
         itemBuilder: (context, index) {
+          String ass = week[index].pathh_to_img;
           return GestureDetector(
-            onTap: () async {
-              String path =
-                  'ms/The_Weeknd_Heartless_Lyrics__RwnE0xR50ms_140.mp3';
-              if (what == 0) {
-                try {
-                  print("Trying to play audio from: $path");
-                  await player.play(AssetSource(path));
-                  print("Audio started successfully.");
-                  what = 1;
-                } catch (e) {
-                  print("Error occurred while playing audio: $e");
-                }
-              } else {
-                player.pause();
-                what = 0;
-              }
+            onTap: () {
+              // Within the `FirstRoute` widget:
+              Pause_Play.playerr(context, index, () {
+                setState(() {}); // Update the state to rebuild the UI
+              });
             },
             child: ListTile(
-              title: Text('what'),
-              leading:
-                  Image.asset('assets/img/pp.jpg'), // Ensure correct image path
+              title: Text(week[index].name),
+
+              leading: Image.asset(ass), // Ensure correct image path
             ),
           );
         },
       ),
     );
+  }
+}
+
+bool what = false;
+
+class Pause_Play {
+  static Future<bool> playerr(
+      BuildContext context, int index, VoidCallback updateState) async {
+    print("$what in class");
+    if (what == false) {
+      try {
+        await player.play(AssetSource(week[index].pathh));
+        what = true;
+        print("$index after play");
+
+        if (ModalRoute.of(context)?.settings.name != '/detailpage') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              settings: RouteSettings(name: '/detailpage'),
+              builder: (context) => Detailpage(
+                song: week[index],
+                audioPlayer: player,
+                index: index,
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        print("Error occurred while playing audio: $e");
+      }
+    } else {
+      print("$what before pause");
+      player.pause();
+      what = false;
+      print("$what after pause");
+    }
+    updateState(); // Call the update state callback to rebuild the UI
+
+    return what;
+  }
+
+  static Icon choose() {
+    if (what == true) {
+      Icon icc = Icon(Icons.pause_circle_filled);
+      return icc;
+    } else {
+      Icon icc = Icon(Icons.play_circle_fill);
+      return icc;
+    }
   }
 }
