@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, camel_case_types, avoid_print
+// ignore_for_file: prefer_const_constructors, camel_case_types, use_build_context_synchronously
 
 // import 'dart:ffi';
 
@@ -15,6 +15,7 @@ void main() {
 
 //player created
 final AudioPlayer player = AudioPlayer();
+bool playingg = false;
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -54,17 +55,15 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-bool what = false;
-
 class Pause_Play {
   static Future<bool> playerr(
       BuildContext context, int index, VoidCallback updateState) async {
-    print("$what in class");
-    if (what == false) {
+    //print("$playingg in class");
+    if (playingg == false) {
       try {
         await player.play(AssetSource(week[index].pathh));
-        what = true;
-        print("$index after play");
+        playingg = true;
+        //print("$index after play");
 
         if (ModalRoute.of(context)?.settings.name != '/detailpage') {
           Navigator.push(
@@ -80,21 +79,31 @@ class Pause_Play {
           );
         }
       } catch (e) {
-        print("Error occurred while playing audio: $e");
+        //print("Error occurred while playing audio: $e");
       }
     } else {
-      print("$what before pause");
+      //print("$playingg before pause");
       player.pause();
-      what = false;
-      print("$what after pause");
+      playingg = false;
+      //print("$playingg after pause");
     }
     updateState(); // Call the update state callback to rebuild the UI
 
-    return what;
+    return playingg;
+  }
+
+  static Future<void> nextMusic(
+      BuildContext context, int index, VoidCallback updateState) async {
+    index += index;
+    //print('ttttttttttt');
+    // playerr(context, index, () {
+    //   setState(() {}); // Update the state to rebuild the UI
+    // });
+    updateState(); // Call the update state callback to rebuild the UI
   }
 
   static Icon choose() {
-    if (what == true) {
+    if (playingg == true) {
       Icon icc = Icon(Icons.pause_circle_filled);
       return icc;
     } else {

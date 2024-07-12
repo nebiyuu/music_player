@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:musicc/main.dart';
 import 'package:musicc/pages/songs.dart';
 
@@ -23,8 +23,30 @@ class Detailpage extends StatefulWidget {
 }
 
 class _DetailpageState extends State<Detailpage> {
+  Duration duration = Duration();
+  Duration position = Duration();
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.audioPlayer.onPositionChanged.listen((positionValue) {
+      setState(() {
+        position = positionValue;
+      });
+    });
+
+    widget.audioPlayer.onDurationChanged.listen((durationValue) {
+      setState(() {
+        duration = durationValue;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    double maxSliderValue = duration.inSeconds.toDouble();
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -53,14 +75,47 @@ class _DetailpageState extends State<Detailpage> {
             SizedBox(
               height: 20,
             ),
-            ElevatedButton(
-              onPressed: () async {
-                await Pause_Play.playerr(context, widget.index, () {
-                  setState(() {}); // Update the state to rebuild the UI
-                });
+            Slider(
+              value: position.inSeconds.toDouble().clamp(0.0, maxSliderValue),
+              min: 0.0,
+              max: maxSliderValue,
+              onChanged: (value) async {
+                final newPosition = Duration(seconds: value.toInt());
+                await widget.audioPlayer.seek(newPosition);
+                print(newPosition);
               },
-              child: Pause_Play.choose(),
-            )
+            ),
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     //Pause_Play.previousMusic(context, widget.index, () {
+                  //       //setState(() {});
+                  //     });
+                  //   },
+                  //   child: Icon(Icons.skip_previous_rounded),
+                  // ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await Pause_Play.playerr(context, widget.index, () {
+                        setState(() {});
+                      });
+                    },
+                    child: Pause_Play.choose(),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Pause_Play.nextMusic(context, widget.index, () {
+                        setState(() {});
+                      });
+                    },
+                    child: Icon(Icons.skip_next_rounded),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
