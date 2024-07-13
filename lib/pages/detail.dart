@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+
 import 'package:musicc/main.dart';
 import 'package:musicc/pages/songs.dart';
 
@@ -23,30 +23,45 @@ class Detailpage extends StatefulWidget {
 }
 
 class _DetailpageState extends State<Detailpage> {
-  Duration duration = Duration();
-  Duration position = Duration();
+  Duration _duration = Duration();
+  Duration _position = Duration();
 
   @override
   void initState() {
+    initPlayer();
     super.initState();
+  }
 
-    widget.audioPlayer.onPositionChanged.listen((positionValue) {
-      setState(() {
-        position = positionValue;
-      });
+  @override
+  void dispose() {
+    widget.audioPlayer.dispose();
+    super.dispose();
+  }
+
+  Future initPlayer() async {
+    // set a callback for changing duration
+    player.onDurationChanged.listen((Duration d) {
+      setState(() => _duration = d);
+      print('wwwwwwwwwwwww $_duration');
+    });
+    player.getDuration().then((value) async {
+      _duration = value!;
+    });
+    // set a callback for position change
+    player.onPositionChanged.listen((Duration p) {
+      setState(() => _position = p);
+      // print('pppppppppppppppp $_position');
     });
 
-    widget.audioPlayer.onDurationChanged.listen((durationValue) {
-      setState(() {
-        duration = durationValue;
-      });
+    player.onPlayerComplete.listen((_) {
+      setState(() => _position = _duration);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    double maxSliderValue = duration.inSeconds.toDouble();
-
+    double cc = _duration.inSeconds.toDouble();
+    double dd = _position.inSeconds.toDouble();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -64,7 +79,7 @@ class _DetailpageState extends State<Detailpage> {
               height: 300.0,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                color: Colors.redAccent,
+                color: Color.fromARGB(255, 253, 249, 249),
               ),
               child: Image(image: AssetImage(widget.song.pathh_to_img)),
             ),
@@ -76,46 +91,57 @@ class _DetailpageState extends State<Detailpage> {
               height: 20,
             ),
             Slider(
-              value: position.inSeconds.toDouble().clamp(0.0, maxSliderValue),
-              min: 0.0,
-              max: maxSliderValue,
+              value: _position.inSeconds.toDouble(),
               onChanged: (value) async {
-                final newPosition = Duration(seconds: value.toInt());
-                await widget.audioPlayer.seek(newPosition);
-                print(newPosition);
+                await player.seek(Duration(seconds: value.toInt()));
+                setState(() {});
               },
+              min: 0,
+              max: cc > 0 ? cc : 3,
+              inactiveColor: Colors.grey,
+              activeColor: Colors.red,
             ),
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // ElevatedButton(
-                  //   onPressed: () {
-                  //     //Pause_Play.previousMusic(context, widget.index, () {
-                  //       //setState(() {});
-                  //     });
-                  //   },
-                  //   child: Icon(Icons.skip_previous_rounded),
-                  // ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      await Pause_Play.playerr(context, widget.index, () {
-                        setState(() {});
-                      });
-                    },
-                    child: Pause_Play.choose(),
-                  ),
-                  ElevatedButton(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(dd.toStringAsFixed(2)),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
                     onPressed: () {
-                      Pause_Play.nextMusic(context, widget.index, () {
-                        setState(() {});
+                      int index = widget.index - 1;
+                      Pause_Play.playerr(context, index, () {
+                        setState(() {}); // Update the state to rebuild the UI
                       });
                     },
-                    child: Icon(Icons.skip_next_rounded),
-                  ),
-                ],
-              ),
-            ),
+                    child: Icon(Icons.skip_previous_rounded)),
+                SizedBox(
+                  width: 10,
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await Pause_Play.playerr(context, widget.index, () {
+                      setState(() {}); // Update the state to rebuild the UI
+                    });
+                  },
+                  child: Pause_Play.choose(),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      int index = widget.index + 1;
+                      Pause_Play.playerr(context, index, () {
+                        setState(() {}); // Update the state to rebuild the UI
+                      });
+                    },
+                    child: Icon(Icons.skip_next_rounded))
+              ],
+            )
           ],
         ),
       ),
