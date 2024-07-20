@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 
 import 'package:musicc/main.dart';
 import 'package:musicc/pages/songs.dart';
+import 'package:musicc/pages/home.dart';
 
 class Detailpage extends StatefulWidget {
   final Song song;
@@ -23,45 +24,8 @@ class Detailpage extends StatefulWidget {
 }
 
 class _DetailpageState extends State<Detailpage> {
-  Duration _duration = Duration();
-  Duration _position = Duration();
-
-  @override
-  void initState() {
-    initPlayer();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    widget.audioPlayer.dispose();
-    super.dispose();
-  }
-
-  Future initPlayer() async {
-    // set a callback for changing duration
-    player.onDurationChanged.listen((Duration d) {
-      setState(() => _duration = d);
-      print('wwwwwwwwwwwww $_duration');
-    });
-    player.getDuration().then((value) async {
-      _duration = value!;
-    });
-    // set a callback for position change
-    player.onPositionChanged.listen((Duration p) {
-      setState(() => _position = p);
-      // print('pppppppppppppppp $_position');
-    });
-
-    player.onPlayerComplete.listen((_) {
-      setState(() => _position = _duration);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    double cc = _duration.inSeconds.toDouble();
-    double dd = _position.inSeconds.toDouble();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -79,7 +43,7 @@ class _DetailpageState extends State<Detailpage> {
               height: 300.0,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                color: Color.fromARGB(255, 253, 249, 249),
+                color: Colors.redAccent,
               ),
               child: Image(image: AssetImage(widget.song.pathh_to_img)),
             ),
@@ -90,57 +54,13 @@ class _DetailpageState extends State<Detailpage> {
             SizedBox(
               height: 20,
             ),
-            Slider(
-              value: _position.inSeconds.toDouble(),
-              onChanged: (value) async {
-                await player.seek(Duration(seconds: value.toInt()));
-                setState(() {});
+            ElevatedButton(
+              onPressed: () async {
+                await Pause_Play.playerr(context, widget.index, () {
+                  setState(() {}); // Update the state to rebuild the UI
+                });
               },
-              min: 0,
-              max: cc > 0 ? cc : 3,
-              inactiveColor: Colors.grey,
-              activeColor: Colors.red,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(dd.toStringAsFixed(2)),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                    onPressed: () {
-                      int index = widget.index - 1;
-                      Pause_Play.playerr(context, index, () {
-                        setState(() {}); // Update the state to rebuild the UI
-                      });
-                    },
-                    child: Icon(Icons.skip_previous_rounded)),
-                SizedBox(
-                  width: 10,
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await Pause_Play.playerr(context, widget.index, () {
-                      setState(() {}); // Update the state to rebuild the UI
-                    });
-                  },
-                  child: Pause_Play.choose(),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                ElevatedButton(
-                    onPressed: () {
-                      int index = widget.index + 1;
-                      Pause_Play.playerr(context, index, () {
-                        setState(() {}); // Update the state to rebuild the UI
-                      });
-                    },
-                    child: Icon(Icons.skip_next_rounded))
-              ],
+              child: Pause_Play.choose(),
             )
           ],
         ),
